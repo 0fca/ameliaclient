@@ -4,6 +4,7 @@ Amelia client app.
 This is CLI client for Amelia office LAN monitoring. 
 
 **Features**
+
 Client can:
 * stop connection,
 * reconnect,
