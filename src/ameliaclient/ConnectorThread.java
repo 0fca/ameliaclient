@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,8 +27,10 @@ import javax.imageio.ImageIO;
  */
 public class ConnectorThread extends Thread implements Runnable {
     private Thread INSIDE = null;
+    private String IP = "localhost";
     //public boolean IS_CONNECTED = false;
     Socket soc = null;
+    
     @Override
     public void start(){
         if(INSIDE == null){
@@ -39,11 +42,16 @@ public class ConnectorThread extends Thread implements Runnable {
     @Override
     public void run(){
         System.out.println("Preparing socket...");
-       
-        while(!this.isInterrupted()){
+        try {
+            System.out.println("Is "+IP+" pingable: "+new InetSocketAddress(IP,7999).getAddress().isReachable(500));
+            //System.out.println(IP);
+        } catch (IOException ex) {
+            Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        while(!INSIDE.isInterrupted()){
             try{
-               //System.out.println(new InetSocketAddress("192.168.0.103",7999).getAddress().isReachable(500));
-               soc = new Socket("192.168.0.103",7999);
+              
+               soc = new Socket(IP,7999);
  
                System.out.println("Slave is listening on port 7999 and waiting for an idle...");
              
@@ -54,7 +62,6 @@ public class ConnectorThread extends Thread implements Runnable {
  
                byte[] buffer = new byte[8192];
  
-               
                    System.out.println("Started...");
                    while(true){
  
@@ -87,14 +94,15 @@ public class ConnectorThread extends Thread implements Runnable {
                     } catch (IOException ex) {
                         Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                   //soc = null;
+                   soc = null;
                }
         }
-       
+       System.out.println("Connection stopped.");
+       INSIDE = null;
     }
    
     public void stopThread() throws IOException{
-        this.interrupt();
+        INSIDE.interrupt();
     }
         private static BufferedImage toBufferedImage(Image img){
             if (img instanceof BufferedImage){
@@ -112,5 +120,14 @@ public class ConnectorThread extends Thread implements Runnable {
             // Return the buffered image
             return bimage;
         }
-       
+    public void setAddress(String ip){
+        this.IP = ip;
+    }   
+    @Override
+    public boolean isInterrupted(){
+        if(INSIDE != null){
+            return INSIDE.isInterrupted();
+        }
+        return true;
+    }
 }
