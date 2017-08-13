@@ -1,2 +1,12 @@
 # ameliaclient
-Amelia client app
+Amelia client app.
+
+This is CLI client for Amelia office LAN monitoring. 
+
+**Features**
+Client can:
+* stop connection,
+* reconnect,
+* wait until the server is up.
+
+
