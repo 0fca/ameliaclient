@@ -28,6 +28,7 @@ import javax.imageio.ImageIO;
 public class ConnectorThread extends Thread implements Runnable {
     private Thread INSIDE = null;
     private String IP = "localhost";
+    private int PORT = 7999;
     //public boolean IS_CONNECTED = false;
     Socket soc = null;
     
@@ -43,7 +44,7 @@ public class ConnectorThread extends Thread implements Runnable {
     public void run(){
         System.out.println("Preparing socket...");
         try {
-            System.out.println("Is "+IP+" pingable: "+new InetSocketAddress(IP,7999).getAddress().isReachable(500));
+            System.out.println("Is "+IP+":"+PORT+" pingable: "+new InetSocketAddress(IP,PORT).getAddress().isReachable(500));
             //System.out.println(IP);
         } catch (IOException ex) {
             Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);
@@ -51,9 +52,9 @@ public class ConnectorThread extends Thread implements Runnable {
         while(!INSIDE.isInterrupted()){
             try{
               
-               soc = new Socket(IP,7999);
- 
-               System.out.println("Slave is listening on port 7999 and waiting for an idle...");
+               soc = new Socket(IP,PORT);
+               
+               System.out.println("Client is listening on port "+PORT+" and waiting for an idle...");
              
                OutputStream out;
  
@@ -88,7 +89,7 @@ public class ConnectorThread extends Thread implements Runnable {
                     try {
                         Logger.getLogger(ConnectionClient.class.getName()).log(Level.ALL,null,e);
                         if(soc != null){
-                            System.err.println("Master disconnected. Resetting connection...");
+                            System.err.println("Server disconnected. Resetting connection...");
                             soc.close();
                         }
                     } catch (IOException ex) {
@@ -123,6 +124,10 @@ public class ConnectorThread extends Thread implements Runnable {
     public void setAddress(String ip){
         this.IP = ip;
     }   
+    
+    public void setPort(int port){
+        this.PORT = port;
+    }
     @Override
     public boolean isInterrupted(){
         if(INSIDE != null){

@@ -26,9 +26,9 @@ public class ConnectionClient {
         
         while(true){
            
-           String line = s.nextLine();
-
-           switch(line){
+           String[] line = s.nextLine().split(" ");
+           
+           switch(line[0]){
                case "stop":
                    System.out.println("Stopping connection...");
                    con.stopThread();
@@ -36,10 +36,9 @@ public class ConnectionClient {
                case "exit":
                    System.exit(0);
                    break;
-               case "set-addr":
+               case "set-ip":
                    if(con.isInterrupted()){
-                       System.out.print("Enter the IP address: ");
-                       String ip = s.nextLine();
+                       String ip = line[1];
                        con.setAddress(ip);
                        System.out.println("The program will connect to "+ip);
                    }else{
@@ -49,8 +48,18 @@ public class ConnectionClient {
                case "reconnect":
                    con.start();
                    break;
+                   
+               case "set-port":
+                   if(con.isInterrupted()){
+                       String port = line[1];
+                       con.setPort(Integer.parseInt(port));
+                       System.out.println("The program will connect to the server via "+port);
+                   }else{
+                       System.err.println("Cannot change port while connection is up.");
+                   }
+                   break;
                default:
-                   System.err.println("There is no command as "+line);
+                   System.err.println("There is no command as "+line[0]);
            }
         }
     }
