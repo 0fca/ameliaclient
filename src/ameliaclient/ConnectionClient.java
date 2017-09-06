@@ -9,7 +9,7 @@ import java.util.Scanner;
  *
  * @author Obsidiam
  */
-public class ConnectionClient {
+public class ConnectionClient extends ConnectorThread{
      static String USER = System.getProperty("user.name");
      static String OS = System.getProperty("os.name");
     /**
@@ -20,7 +20,7 @@ public class ConnectionClient {
      */
     public static void main(String[] args) throws FileNotFoundException, IOException, AWTException, InterruptedException {
         ConnectorThread con = new ConnectorThread();
-        con.setName("ConnectorThread");
+        //con.setName("ConnectorThread");
         con.start();
         Scanner s = new Scanner(System.in);
         
@@ -34,6 +34,7 @@ public class ConnectionClient {
                    con.stopThread();
                    break;
                case "exit":
+                   con.saveSettings();
                    System.exit(0);
                    break;
                case "set-ip":
@@ -45,7 +46,7 @@ public class ConnectionClient {
                        System.err.println("Cannot change address while connection is up.");
                    }
                    break;
-               case "reconnect":
+               case "connect":
                    con.start();
                    break;
                    
@@ -58,9 +59,23 @@ public class ConnectionClient {
                        System.err.println("Cannot change port while connection is up.");
                    }
                    break;
+               case "load":
+                   if(!con.loadSettings()){
+                       System.err.println("Cannot find the settings file.");
+                   }else{
+                       System.out.println("Restart to connect the server!");
+                   }
+                   break;
+               case "help":
+                   printHelp();
+                   break;
+               case "?":
+                   printHelp();
+                   break;
                default:
                    System.err.println("There is no command as "+line[0]);
            }
+           
         }
     }
    
@@ -72,5 +87,16 @@ public class ConnectionClient {
         }
         return path;
        
+    }
+
+    private static void printHelp() {
+        System.out.println("Amelia Client v.1.0 by Obsidiam");
+        System.out.println("Commands: \n"
+                + "stop - stops the connection\n"
+                + "reconnect - reconnects to the server\n"
+                + "set-port - sets the port\n"
+                + "set-ip - sets IP address of the server\n"
+                + "help - prints this message\n"
+                + "load - loads settings from default file");
     }
 }
