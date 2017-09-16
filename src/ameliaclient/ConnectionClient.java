@@ -66,6 +66,13 @@ public class ConnectionClient extends ConnectorThread{
                        System.out.println("Restart to connect the server!");
                    }
                    break;
+               case "save":
+                   if(con.saveSettings()){
+                       System.out.println("Settings saved.");
+                   }else{
+                       System.err.println("Error saving settings.");
+                   }
+                   break;
                case "help":
                    printHelp();
                    break;

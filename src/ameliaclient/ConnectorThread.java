@@ -27,13 +27,13 @@ import javax.imageio.ImageIO;
  
 /**
  *
- * @author lukas
+ * @author obsidiam
  */
 public class ConnectorThread extends Thread implements Runnable {
     private Thread INSIDE = null;
     private String IP = "localhost";
     private int PORT = 7999;
-    //public boolean IS_CONNECTED = false;
+    private String ext = "JPG";
     Socket soc = null;
     
     {
@@ -57,8 +57,6 @@ public class ConnectorThread extends Thread implements Runnable {
         System.out.println("Preparing socket...");
         try {
             System.out.println("Is "+IP+":"+PORT+" pingable: "+new InetSocketAddress(IP,PORT).getAddress().isReachable(500));
-            
-            //System.out.println(IP);
         } catch (IOException ex) {
             Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -89,9 +87,9 @@ public class ConnectorThread extends Thread implements Runnable {
                        BufferedImage image = new Robot().createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
                        Image img = image.getScaledInstance(250, 150, BufferedImage.SCALE_SMOOTH);
  
-                       ImageIO.write(toBufferedImage(img), "jpg", new File(USER+".jpg"));
-                       File fileToSend = new File(USER+".jpg");
- 
+                       ImageIO.write(toBufferedImage(img), ext, new File(USER+"."+ext));
+                       File fileToSend = new File(USER+"."+ext);
+                       //System.out.println(fileToSend.length());
                        InputStream in = new BufferedInputStream(new FileInputStream(fileToSend));
                        in.read(buffer,len+1,8192-(len+1));
                        out = soc.getOutputStream();
@@ -99,7 +97,7 @@ public class ConnectorThread extends Thread implements Runnable {
                        Thread.sleep(1000);
                    }
                }catch(AWTException | HeadlessException | IOException | InterruptedException e){
-                    //Logger.getLogger(ConnectorThread.class.getName()).log(Level.WARNING,null,e);
+
                     try {
                         Logger.getLogger(ConnectionClient.class.getName()).log(Level.ALL,null,e);
                         if(soc != null){
@@ -149,13 +147,22 @@ public class ConnectorThread extends Thread implements Runnable {
         this.PORT = port;
     }
     
-    void saveSettings() throws IOException{
+   
+    
+    protected boolean saveSettings(){
         File settings = new File("settings");
-        settings.createNewFile();
         
-        FileWriter fw = new FileWriter(settings);
-        fw.write(IP+":"+PORT);
-        fw.close();
+        
+        FileWriter fw;
+        try {
+            settings.createNewFile();
+            fw = new FileWriter(settings);
+            fw.write(IP+":"+PORT);
+            fw.close();
+            return true;
+        } catch (IOException ex) {
+           return false;
+        }       
     }
     
     @Override
