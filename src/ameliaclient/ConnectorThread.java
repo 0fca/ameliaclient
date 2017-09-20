@@ -1,6 +1,7 @@
 package ameliaclient;
  
 import static ameliaclient.ConnectionClient.USER;
+import ameliaclient.data.ConnectionData;
 import java.awt.AWTException;
 import java.awt.Graphics2D;
 import java.awt.HeadlessException;
@@ -10,15 +11,13 @@ import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -35,28 +34,30 @@ public class ConnectorThread extends Thread implements Runnable {
     private int PORT = 7999;
     private String ext = "JPG";
     Socket soc = null;
+    static ConnectionData cd;
     
-    {
-        try {
-            loadSettings();
-        } catch (IOException ex) {
-            Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public ConnectorThread(ConnectionData c){
+        IP = c.getIp();
+        PORT = c.getPort();
+        cd = c;
     }
+    
+    
     
     @Override
     public void start(){
         if(INSIDE == null){
             INSIDE = new Thread(this,"ConnectorThread");
             INSIDE.start();
+            cd.setThread(INSIDE);
         }
     }
    
     @Override
     public void run(){
-        System.out.println("Preparing socket...");
+        print("Preparing socket...\n", System.out);
         try {
-            System.out.println("Is "+IP+":"+PORT+" pingable: "+new InetSocketAddress(IP,PORT).getAddress().isReachable(500));
+            print("Is "+IP+":"+PORT+" pingable: "+new InetSocketAddress(IP,PORT).getAddress().isReachable(500),System.out);
         } catch (IOException ex) {
             Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -64,8 +65,8 @@ public class ConnectorThread extends Thread implements Runnable {
             try{
               
                soc = new Socket(IP,PORT);
-               
-               System.out.println("Client is listening on port "+PORT+" and waiting for an idle...");
+               cd.setSocket(soc);
+               print("Client is listening on port "+PORT+" and waiting for an idle...\n", System.out);
              
                OutputStream out;
  
@@ -74,7 +75,7 @@ public class ConnectorThread extends Thread implements Runnable {
  
                byte[] buffer = new byte[8192];
  
-                   System.out.println("Started...");
+                   print("Started...", System.out);
                    //System.out.println(">");
                    while(true){
  
@@ -101,18 +102,20 @@ public class ConnectorThread extends Thread implements Runnable {
                     try {
                         Logger.getLogger(ConnectionClient.class.getName()).log(Level.ALL,null,e);
                         if(soc != null){
-                            System.err.println("Server disconnected. Resetting connection...");
+                            System.err.println("Server disconnected. Resetting connection...\n");
                             soc.close();
                         }
                     } catch (IOException ex) {
                         Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);
                     }
                    soc = null;
+                   
                }
+            
             
         }
         
-       System.out.println("Connection stopped.");
+       print("Connection stopped.", System.out);
        INSIDE = null;
        //System.out.print(">");
     }
@@ -121,6 +124,7 @@ public class ConnectorThread extends Thread implements Runnable {
         if(INSIDE != null){
             INSIDE.interrupt();
             saveSettings();
+            
         }
     }
         private static BufferedImage toBufferedImage(Image img){
@@ -173,25 +177,22 @@ public class ConnectorThread extends Thread implements Runnable {
         return true;
     }
 
-    protected boolean loadSettings() throws FileNotFoundException, IOException {
-        File f = new File("settings");
-        if(f.exists()){
-            BufferedReader fr = new BufferedReader(new FileReader(f));
-            
-            char[] c = new char[32];
-            if(fr.ready()){
-                fr.read(c);
-                fr.close();
-            }
-            parseSettings(new String(c));
-            return true;
-        }
-        return false;
-    }
-
-    private void parseSettings(String s) {
-        String[] tmp = s.split(":");
-        IP = tmp[0];
-        PORT = Integer.parseInt(tmp[1].trim());
+    
+    
+    static void print(String msg, PrintStream ps){
+       ps.print(msg);
+       if(!msg.endsWith("\n")){
+           try {
+               
+               if(System.getProperty("os.name").contains("Windows")){
+                  Runtime.getRuntime().exec("cls");
+               }else{
+                   Runtime.getRuntime().exec("clear");
+               }
+           } catch (IOException ex) {
+               Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);
+           }
+            ps.print("\n>");
+       }
     }
 }

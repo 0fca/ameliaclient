@@ -1,25 +1,42 @@
 package ameliaclient;
  
+import ameliaclient.data.ConnectionData;
 import java.awt.AWTException;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
  
 /**
  *
  * @author Obsidiam
  */
-public class ConnectionClient extends ConnectorThread{
+public class ConnectionClient {
      static String USER = System.getProperty("user.name");
      static String OS = System.getProperty("os.name");
+     static ConnectionData cd = new ConnectionData();
     /**
      * @param args the command line arguments
      * @throws java.io.FileNotFoundException
      * @throws java.awt.AWTException
      * @throws java.lang.InterruptedException
      */
+     
+     
+    static{
+        try {
+            loadSettings();
+        } catch (IOException ex) {
+            Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+     
     public static void main(String[] args) throws FileNotFoundException, IOException, AWTException, InterruptedException {
-        ConnectorThread con = new ConnectorThread();
+        ConnectorThread con = new ConnectorThread(cd);
         //con.setName("ConnectorThread");
         con.start();
         Scanner s = new Scanner(System.in);
@@ -30,7 +47,7 @@ public class ConnectionClient extends ConnectorThread{
            
            switch(line[0]){
                case "stop":
-                   System.out.println("Stopping connection...");
+                   ConnectorThread.print("Stopping connection...\n", System.out);
                    con.stopThread();
                    break;
                case "exit":
@@ -41,9 +58,9 @@ public class ConnectionClient extends ConnectorThread{
                    if(con.isInterrupted()){
                        String ip = line[1];
                        con.setAddress(ip);
-                       System.out.println("The program will connect to "+ip);
+                       ConnectorThread.print("The program will connect to "+ip, System.out);
                    }else{
-                       System.err.println("Cannot change address while connection is up.");
+                       System.err.println("Cannot change address while connection is up.\n");
                    }
                    break;
                case "connect":
@@ -54,23 +71,23 @@ public class ConnectionClient extends ConnectorThread{
                    if(con.isInterrupted()){
                        String port = line[1];
                        con.setPort(Integer.parseInt(port));
-                       System.out.println("The program will connect to the server via "+port);
+                       ConnectorThread.print("The program will connect to the server via "+port, System.out);
                    }else{
-                       System.err.println("Cannot change port while connection is up.");
+                       ConnectorThread.print("Cannot change port while connection is up.", System.err);
                    }
                    break;
                case "load":
-                   if(!con.loadSettings()){
-                       System.err.println("Cannot find the settings file.");
+                   if(!loadSettings()){
+                       ConnectorThread.print("Cannot find the settings file.", System.out);
                    }else{
-                       System.out.println("Restart to connect the server!");
+                       ConnectorThread.print("Restart to connect the server!", System.err);
                    }
                    break;
                case "save":
                    if(con.saveSettings()){
-                       System.out.println("Settings saved.");
+                       ConnectorThread.print("Settings saved.", System.out);
                    }else{
-                       System.err.println("Error saving settings.");
+                       ConnectorThread.print("Error saving settings.", System.err);
                    }
                    break;
                case "help":
@@ -79,8 +96,14 @@ public class ConnectionClient extends ConnectorThread{
                case "?":
                    printHelp();
                    break;
+               case "view-settings":
+                   ConnectorThread.print("Server's IP: "+cd.getIp(), System.out);
+                   ConnectorThread.print("Local IP: "+cd.getLocalIp(), System.out);
+                   ConnectorThread.print("Port: "+cd.getPort(), System.out);
+                   ConnectorThread.print("Is ready to connect: "+(cd.getThread() != null), System.out);
+                   break;
                default:
-                   System.err.println("There is no command as "+line[0]);
+                   ConnectorThread.print("There is no command as "+line[0], System.err);
            }
            
         }
@@ -97,13 +120,37 @@ public class ConnectionClient extends ConnectorThread{
     }
 
     private static void printHelp() {
-        System.out.println("Amelia Client v.1.0 by Obsidiam");
+        System.out.println("Amelia Client v.1.5 by Obsidiam");
         System.out.println("Commands: \n"
                 + "stop - stops the connection\n"
                 + "reconnect - reconnects to the server\n"
                 + "set-port - sets the port\n"
                 + "set-ip - sets IP address of the server\n"
                 + "help - prints this message\n"
-                + "load - loads settings from default file");
+                + "load - loads settings from default file\n"
+                + "save - saves settings\n"
+                + "view-settings - views settings");
+    }
+    
+    protected static boolean loadSettings() throws FileNotFoundException, IOException {
+        File f = new File("settings");
+        if(f.exists()){
+            BufferedReader fr = new BufferedReader(new FileReader(f));
+            
+            char[] c = new char[32];
+            if(fr.ready()){
+                fr.read(c);
+                fr.close();
+            }
+            parseSettings(new String(c));
+            return true;
+        }
+        return false;
+    }
+
+    private static void parseSettings(String s) {
+        String[] tmp = s.split(":");
+        cd.setIp(tmp[0]);
+        cd.setPort(Integer.parseInt(tmp[1].trim()));
     }
 }
