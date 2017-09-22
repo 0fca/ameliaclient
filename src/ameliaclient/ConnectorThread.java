@@ -61,7 +61,7 @@ public class ConnectorThread extends Thread implements Runnable {
         } catch (IOException ex) {
             Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);
         }
-        while(!INSIDE.isInterrupted()){
+        while(INSIDE != null){
             try{
               
                soc = new Socket(IP,PORT);
@@ -77,7 +77,7 @@ public class ConnectorThread extends Thread implements Runnable {
  
                    print("Started...", System.out);
                    //System.out.println(">");
-                   while(true){
+                   while(soc != null){
  
                        buffer[0] = (byte)len;
                        for(int it = 1; it<=len; it++){
@@ -109,22 +109,21 @@ public class ConnectorThread extends Thread implements Runnable {
                         Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);
                     }
                    soc = null;
-                   
                }
-            
-            
         }
         
        print("Connection stopped.", System.out);
-       INSIDE = null;
        //System.out.print(">");
     }
    
     protected void stopThread() throws IOException{
         if(INSIDE != null){
+            if(soc != null){
+                soc.close();
+            }
             INSIDE.interrupt();
             saveSettings();
-            
+            INSIDE = null;
         }
     }
         private static BufferedImage toBufferedImage(Image img){
@@ -183,11 +182,10 @@ public class ConnectorThread extends Thread implements Runnable {
        ps.print(msg);
        if(!msg.endsWith("\n")){
            try {
-               
                if(System.getProperty("os.name").contains("Windows")){
-                  Runtime.getRuntime().exec("cls");
+                  Runtime.getRuntime().exec(new String[]{"cmd.exe","/c","cls"});
                }else{
-                   Runtime.getRuntime().exec("clear");
+                   Runtime.getRuntime().exec(new String[]{"bash","-c","cls"});
                }
            } catch (IOException ex) {
                Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);

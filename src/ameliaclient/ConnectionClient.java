@@ -3,6 +3,7 @@ package ameliaclient;
 import ameliaclient.data.ConnectionData;
 import java.awt.AWTException;
 import java.io.BufferedReader;
+import java.io.Console;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -39,6 +40,7 @@ public class ConnectionClient {
         ConnectorThread con = new ConnectorThread(cd);
         //con.setName("ConnectorThread");
         con.start();
+
         Scanner s = new Scanner(System.in);
         
         while(true){
@@ -121,15 +123,15 @@ public class ConnectionClient {
 
     private static void printHelp() {
         System.out.println("Amelia Client v.1.5 by Obsidiam");
-        System.out.println("Commands: \n"
+        System.out.print("Commands: \n"
                 + "stop - stops the connection\n"
-                + "reconnect - reconnects to the server\n"
+                + "connect - reconnects to the server\n"
                 + "set-port - sets the port\n"
                 + "set-ip - sets IP address of the server\n"
                 + "help - prints this message\n"
                 + "load - loads settings from default file\n"
                 + "save - saves settings\n"
-                + "view-settings - views settings");
+                + "view-settings - views settings\n>");
     }
     
     protected static boolean loadSettings() throws FileNotFoundException, IOException {
