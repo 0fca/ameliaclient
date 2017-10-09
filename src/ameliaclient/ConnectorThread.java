@@ -62,6 +62,7 @@ public class ConnectorThread extends Thread implements Runnable {
             Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);
         }
         while(INSIDE != null){
+            if(!INSIDE.isInterrupted()){
             try{
               
                soc = new Socket(IP,PORT);
@@ -78,7 +79,7 @@ public class ConnectorThread extends Thread implements Runnable {
                    print("Started...", System.out);
                    //System.out.println(">");
                    while(soc != null){
- 
+                         
                        buffer[0] = (byte)len;
                        for(int it = 1; it<=len; it++){
                            buffer[it] = (byte)((int)user_chars[it-1]);
@@ -91,10 +92,21 @@ public class ConnectorThread extends Thread implements Runnable {
                        ImageIO.write(toBufferedImage(img), ext, new File(USER+"."+ext));
                        File fileToSend = new File(USER+"."+ext);
                        //System.out.println(fileToSend.length());
+                       boolean isRemoteRequested = true;
+                       InputStream fromServer = soc.getInputStream();
+                       if(fromServer.available() > 0){
+                           byte[] tmp = new byte[256];
+                           fromServer.read(tmp);
+                           isRemoteRequested = (tmp[0] == 1);
+                           
+                       }
+                       
+                       cd.setRemoteDesktopOn(isRemoteRequested);
                        InputStream in = new BufferedInputStream(new FileInputStream(fileToSend));
                        in.read(buffer,len+1,8192-(len+1));
                        out = soc.getOutputStream();
                        out.write(buffer);
+                       
                        Thread.sleep(1000);
                    }
                }catch(AWTException | HeadlessException | IOException | InterruptedException e){
@@ -110,6 +122,7 @@ public class ConnectorThread extends Thread implements Runnable {
                     }
                    soc = null;
                }
+            }
         }
         
        print("Connection stopped.", System.out);
@@ -120,28 +133,28 @@ public class ConnectorThread extends Thread implements Runnable {
         if(INSIDE != null){
             if(soc != null){
                 soc.close();
+                soc = null;
             }
             INSIDE.interrupt();
             saveSettings();
             INSIDE = null;
         }
     }
-        private static BufferedImage toBufferedImage(Image img){
-            if (img instanceof BufferedImage){
-                return (BufferedImage) img;
-            }
- 
-            // Create a buffered image with transparency
-            BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.SCALE_SMOOTH);
- 
-            // Draw the image on to the buffered image
-            Graphics2D bGr = bimage.createGraphics();
-            bGr.drawImage(img, 0, 0, null);
-            bGr.dispose();
- 
-            // Return the buffered image
-            return bimage;
+    
+    private static BufferedImage toBufferedImage(Image img){
+        if (img instanceof BufferedImage){
+            return (BufferedImage) img;
         }
+
+        BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.SCALE_SMOOTH);
+
+        Graphics2D bGr = bimage.createGraphics();
+        bGr.drawImage(img, 0, 0, null);
+        bGr.dispose();
+
+        return bimage;
+    }
+    
     protected void setAddress(String ip){
         this.IP = ip;
     }   
@@ -149,8 +162,6 @@ public class ConnectorThread extends Thread implements Runnable {
     protected void setPort(int port){
         this.PORT = port;
     }
-    
-   
     
     protected boolean saveSettings(){
         File settings = new File("settings");
@@ -176,8 +187,6 @@ public class ConnectorThread extends Thread implements Runnable {
         return true;
     }
 
-    
-    
     static void print(String msg, PrintStream ps){
        ps.print(msg);
        if(!msg.endsWith("\n")){
@@ -190,7 +199,7 @@ public class ConnectorThread extends Thread implements Runnable {
            } catch (IOException ex) {
                Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);
            }
-            ps.print("\n>");
+           ps.print("\n>");
        }
     }
 }

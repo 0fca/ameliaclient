@@ -1,9 +1,11 @@
 package ameliaclient;
  
 import ameliaclient.data.ConnectionData;
+import ameliaclient.nativesupport.DeviceType;
+import ameliaclient.nativesupport.NativeControllerFactory;
+import ameliaclient.nativesupport.NativeMouseController;
 import java.awt.AWTException;
 import java.io.BufferedReader;
-import java.io.Console;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -20,6 +22,7 @@ public class ConnectionClient {
      static String USER = System.getProperty("user.name");
      static String OS = System.getProperty("os.name");
      static ConnectionData cd = new ConnectionData();
+     private static RemoteDesktopThread rdt;
     /**
      * @param args the command line arguments
      * @throws java.io.FileNotFoundException
@@ -103,6 +106,27 @@ public class ConnectionClient {
                    ConnectorThread.print("Local IP: "+cd.getLocalIp(), System.out);
                    ConnectorThread.print("Port: "+cd.getPort(), System.out);
                    ConnectorThread.print("Is ready to connect: "+(cd.getThread() != null), System.out);
+                   break;
+                   
+               case "check-native-acc":
+                   ConnectorThread.print("Warning: Testing native access can cause fatal error, do you want to proceed?",System.err);
+                   String choice = s.nextLine();
+                   if(choice.trim().toLowerCase().contains("y")){
+                       NativeControllerFactory mouseController = new NativeControllerFactory(DeviceType.MOUSE);
+                       NativeMouseController nativeMouseController = (NativeMouseController)mouseController.getControllerInstance();
+                       nativeMouseController.sendCoords(10, 10);
+                       nativeMouseController.nativeMouseClick(1);
+                   }else{
+                       ConnectorThread.print("",System.out);
+                   }
+                   break;
+                   
+               case "remote-start":
+                   if(cd.isRemoteOn()){
+                        System.out.println("Starting remote desktop...");
+                        rdt = new RemoteDesktopThread(cd.getIp());
+                        rdt.start();
+                   }
                    break;
                default:
                    ConnectorThread.print("There is no command as "+line[0], System.err);

@@ -17,6 +17,7 @@ public class ConnectionData {
     private int PORT = 7999;
     private String ext = "JPG";
     private Socket s;
+    private boolean isRemoteOn = false;
     
     public void setThread(Thread t){
         INSIDE = t;
@@ -53,5 +54,13 @@ public class ConnectionData {
     
     public String getLocalIp(){
         return s != null ? s.getLocalAddress().getHostName() : null;
+    }
+    
+    public void setRemoteDesktopOn(boolean isOn){
+        this.isRemoteOn = isOn;
+    }
+    
+    public boolean isRemoteOn(){
+        return isRemoteOn;
     }
 }
