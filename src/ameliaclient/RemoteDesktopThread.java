@@ -7,6 +7,7 @@ package ameliaclient;
 
 import ameliaclient.nativesupport.DeviceType;
 import ameliaclient.nativesupport.NativeControllerFactory;
+import ameliaclient.nativesupport.NativeKeyboardController;
 import ameliaclient.nativesupport.NativeMouseController;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -29,8 +30,13 @@ public class RemoteDesktopThread extends Thread implements Runnable {
     private static Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
     private static String ip = "localhost";
     private static boolean hasMouseStateChanged = false, hasKeyboardStateChanged = false;
+    private static NativeMouseController nativeMouseController;
+    private static NativeKeyboardController keyboardController;
+
     
     RemoteDesktopThread(String ip){
+        nativeMouseController = (NativeMouseController)NativeControllerFactory.getControllerInstance(DeviceType.MOUSE);
+        keyboardController = (NativeKeyboardController)NativeControllerFactory.getControllerInstance(DeviceType.KEYBOARD);
         this.ip = ip;
     }
     
@@ -139,13 +145,12 @@ public class RemoteDesktopThread extends Thread implements Runnable {
     }
     
     private void executeOperations() {
-           NativeControllerFactory mouseController = new NativeControllerFactory(DeviceType.MOUSE);
-           NativeMouseController nativeMouseController = (NativeMouseController)mouseController.getControllerInstance();
+           NativeMouseController nativeMouseController = (NativeMouseController)NativeControllerFactory.getControllerInstance(DeviceType.MOUSE);
            if(hasMouseStateChanged){
                Double tmpx = x;
                Double tmpy = y;
                nativeMouseController.sendCoords(tmpx.intValue(), tmpy.intValue());
-               nativeMouseController.nativeMouseClick(1);
+               nativeMouseController.doMouseClick(1);
                System.out.println(x+","+y);
            }
     }

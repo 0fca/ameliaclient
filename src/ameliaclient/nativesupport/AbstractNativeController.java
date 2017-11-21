@@ -12,7 +12,8 @@ import com.sun.jna.Library;
  * @author obsidiam
  */
 public abstract class AbstractNativeController {
-    interface ExtLib extends Library {//only for loading X11.}
+    interface ExtLib extends Library {//only for loading X11.
+        
     }
     
     public abstract DeviceType getControllerType();

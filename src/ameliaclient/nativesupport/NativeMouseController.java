@@ -5,9 +5,6 @@
  */
 package ameliaclient.nativesupport;
 
-import com.sun.jna.Native;
-import com.sun.jna.Platform;
-import java.io.File;
 
 /**
  *
@@ -16,28 +13,22 @@ import java.io.File;
 public class NativeMouseController extends AbstractNativeController{
     private static volatile NativeMouseController instance = new NativeMouseController();
     
-    static{
-        //System.out.println(System.getProperties());
-       
-        System.load(System.getProperty("user.dir")+File.separator+"libnativeioaccess.so");
-        
-        //System.load("/home/lukas/Desktop/libjnidispatch.so");
-        
-        System.setProperty("jna.debug_load", "true");
-        Native.loadLibrary(Platform.isLinux() ? "X11" : "user32.dll" , ExtLib.class);
-    }
-    
+
     private NativeMouseController(){}
     
     public synchronized static NativeMouseController getInstance(){
         return instance;
     }
     
-    public native boolean nativeMouseClick(int button);
+    private native boolean nativeMouseClick(int button);
     public native void sendCoords(int x, int y);
 
     @Override
     public DeviceType getControllerType() {
        return DeviceType.MOUSE;
+    }
+    
+    public boolean doMouseClick(int button){
+        return button <= 3 && button >= 1 ? nativeMouseClick(button) : false;
     }
 }

@@ -41,9 +41,7 @@ public class ConnectorThread extends Thread implements Runnable {
         PORT = c.getPort();
         cd = c;
     }
-    
-    
-    
+
     @Override
     public void start(){
         if(INSIDE == null){
@@ -92,13 +90,12 @@ public class ConnectorThread extends Thread implements Runnable {
                        ImageIO.write(toBufferedImage(img), ext, new File(USER+"."+ext));
                        File fileToSend = new File(USER+"."+ext);
                        //System.out.println(fileToSend.length());
-                       boolean isRemoteRequested = true;
+                       boolean isRemoteRequested = false;
                        InputStream fromServer = soc.getInputStream();
                        if(fromServer.available() > 0){
                            byte[] tmp = new byte[256];
                            fromServer.read(tmp);
                            isRemoteRequested = (tmp[0] == 1);
-                           
                        }
                        
                        cd.setRemoteDesktopOn(isRemoteRequested);
@@ -126,7 +123,6 @@ public class ConnectorThread extends Thread implements Runnable {
         }
         
        print("Connection stopped.", System.out);
-       //System.out.print(">");
     }
    
     protected void stopThread() throws IOException{
@@ -155,18 +151,9 @@ public class ConnectorThread extends Thread implements Runnable {
         return bimage;
     }
     
-    protected void setAddress(String ip){
-        this.IP = ip;
-    }   
-    
-    protected void setPort(int port){
-        this.PORT = port;
-    }
-    
     protected boolean saveSettings(){
         File settings = new File("settings");
-        
-        
+
         FileWriter fw;
         try {
             settings.createNewFile();
@@ -194,7 +181,7 @@ public class ConnectorThread extends Thread implements Runnable {
                if(System.getProperty("os.name").contains("Windows")){
                   Runtime.getRuntime().exec(new String[]{"cmd.exe","/c","cls"});
                }else{
-                   Runtime.getRuntime().exec(new String[]{"bash","-c","cls"});
+                   Runtime.getRuntime().exec(new String[]{"bash","-c","clear"});
                }
            } catch (IOException ex) {
                Logger.getLogger(ConnectorThread.class.getName()).log(Level.SEVERE, null, ex);

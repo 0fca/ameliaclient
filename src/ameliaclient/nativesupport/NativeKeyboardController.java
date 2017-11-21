@@ -5,8 +5,10 @@
  */
 package ameliaclient.nativesupport;
 
-import com.sun.jna.Native;
-import com.sun.jna.Platform;
+import ameliaclient.data.InputDataType;
+
+
+
 
 /**
  *
@@ -14,16 +16,9 @@ import com.sun.jna.Platform;
  */
 public class NativeKeyboardController extends AbstractNativeController{
 
-    private static volatile NativeKeyboardController instance = new NativeKeyboardController();
     
-    static{
-        //System.out.println(System.getProperties());
-        System.load("/home/lukas/Desktop/libnativeioaccess.so");
-        //System.load("/home/lukas/Desktop/libjnidispatch.so");
-        
-        System.setProperty("jna.debug_load", "true");
-        Native.loadLibrary(Platform.isLinux() ? "X11" : "user32.dll" , ExtLib.class);
-    }
+    
+    private static volatile NativeKeyboardController instance = new NativeKeyboardController();
     
     private NativeKeyboardController(){}
     
@@ -31,12 +26,30 @@ public class NativeKeyboardController extends AbstractNativeController{
         return instance;
     }
     
-    public native void nativeKeyPress(char c);
+    private native char nativeKeyPress(String c, int modifier);
+    private native char nativeTypeSequence(String sequence, int modifier);
     public native String getKeyboardLayout();
     
     @Override
     public DeviceType getControllerType() {
        return DeviceType.KEYBOARD;
+    }
+    
+    public boolean inputKeyboardData(String c, int modifier,InputDataType e){
+        if(modifier <= 7 && modifier >= 0){
+            switch(e){
+                case PRESS:
+                    return nativeKeyPress(c,modifier) != 0;
+
+                case SEQUENCE:
+                    return nativeTypeSequence(c,modifier) != 0;
+
+                default: 
+                    return false;
+            }
+        }else{
+            return false;
+        }
     }
     
 }
