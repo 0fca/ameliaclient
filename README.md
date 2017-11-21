@@ -1,5 +1,5 @@
-# ameliaclient
-Amelia client app.
+# Alice(ameliaclient)
+Alice client app.
 
 This is CLI client for Amelia office LAN monitoring. 
 
